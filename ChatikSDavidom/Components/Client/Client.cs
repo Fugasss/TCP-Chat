@@ -24,13 +24,15 @@ namespace ChatikSDavidom.Components.Client
         private readonly IPAddress m_Address;
         private readonly int m_Port;
 
-        private byte[] m_Buffer = new byte[4096];
-        private byte[] m_Received = new byte[4096];
+        private const int BufferSize = 4096;
+
+        private byte[] m_Buffer = new byte[BufferSize];
+        private byte[] m_Received = new byte[BufferSize];
 
         private void BeginConnection()
         {
             m_Stream = m_Client.GetStream();
-            m_Stream.BeginRead(m_Buffer, 0, 0, ReadAsync, null);
+            m_Stream.BeginRead(m_Buffer, 0, BufferSize, ReadAsync, null);
         }
 
 
@@ -43,7 +45,7 @@ namespace ChatikSDavidom.Components.Client
 
             Array.Copy(m_Buffer, m_Received, count);
 
-
+            m_Stream.BeginRead(m_Buffer, 0 , BufferSize, ReadAsync, null);
         }
     }
 }

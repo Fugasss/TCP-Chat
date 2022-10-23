@@ -23,6 +23,7 @@ namespace ChatikSDavidom.Components.Packet
         public Packet(byte[] bytes)
         {
             m_Bytes = new List<byte>(bytes);
+            m_Index = m_Bytes.Count;
         }
 
         public void Write(object obj)
@@ -60,8 +61,6 @@ namespace ChatikSDavidom.Components.Packet
             byte[] bytes;
             object? result = null;
 
-            m_Index = m_Bytes.Count ;
-
             if (type == typeof(string) || type == typeof(DateTime))
             {
                 bytes = m_Bytes.GetRange(m_Index - StringSize, StringSize).ToArray();
@@ -84,7 +83,7 @@ namespace ChatikSDavidom.Components.Packet
             return result;
         }
 
-        public byte[] ToBytes()
+        public byte[] GetBytes()
         {
             return m_Bytes.ToArray();
         }
