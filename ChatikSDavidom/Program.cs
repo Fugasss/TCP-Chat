@@ -1,17 +1,20 @@
-﻿using ChatikSDavidom.Components.Packet;
+﻿using ChatikSDavidom.Components.Client;
+using ChatikSDavidom.Components.Net;
+using Common.Net.ConcretePackets;
+using System.Net;
 
-Packet packet = new Packet();
+string ip = "127.0.0.1";
+string port = "7777";
 
-packet.Write("Test");
-packet.Write(123);
-packet.Write(523);
 
-var packet2 = new Packet(packet.GetBytes());
+Client client = new(IPAddress.Parse(ip), int.Parse(port), $"Test {new Random().Next(0, 1000)}");
+client.Send(new Welcome(client.Name));
 
-var integer = packet2.ReadFromEnd<int>();
-var integer2 = packet2.ReadFromEnd<int>();
-var str = packet2.ReadFromEnd<string>();
 
-Console.WriteLine(str);
-Console.WriteLine(integer);
-Console.WriteLine(integer2);
+int messageCount = 0;
+
+while (client.Connected)
+{
+    await Task.Delay(5000);
+    client.Send(new UserMessage(client.Name, $"{++messageCount}"));
+}

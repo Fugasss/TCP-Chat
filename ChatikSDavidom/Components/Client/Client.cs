@@ -5,36 +5,53 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
+using ChatikSDavidom.Components;
+using ChatikSDavidom.Components.Net;
+using Common;
+using ClientSide.Components;
+using Common.Net.ConcretePackets;
 
 namespace ChatikSDavidom.Components.Client
 {
     public class Client
     {
-        public Client(IPAddress address, int port)
+        public Client(IPAddress address, int port, string name)
         {
             m_Address = address;
             m_Port = port;
+            Name = name;
             m_Client = new TcpClient(address.ToString(), port);
+            m_Stream = m_Client.GetStream();
+            Connected = true;
 
-            BeginConnection();
+            BeginRead();
         }
+
+        public bool Connected { get; private set; }
+        public string Name { get; }
 
         private TcpClient m_Client;
         private NetworkStream m_Stream;
         private readonly IPAddress m_Address;
         private readonly int m_Port;
 
-        private const int BufferSize = 4096;
+        private byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
+        private byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
 
-        private byte[] m_Buffer = new byte[BufferSize];
-        private byte[] m_Received = new byte[BufferSize];
-
-        private void BeginConnection()
+        public void Send(Packet packet)
         {
-            m_Stream = m_Client.GetStream();
-            m_Stream.BeginRead(m_Buffer, 0, BufferSize, ReadAsync, null);
+            Chat.SendMessage(packet.ToString());
+
+            var bytes = packet.GetBytes();
+            Array.Copy(bytes, m_SendBuffer, bytes.Length);
+
+            m_Stream.BeginWrite(m_SendBuffer, 0, bytes.Length, null, null);
         }
 
+        private void BeginRead()
+        {
+            m_Stream.BeginRead(m_ReceiveBuffer, 0, Settings.MaxBufferSize, ReadAsync, null);
+        }
 
         private void ReadAsync(IAsyncResult result)
         {
@@ -43,9 +60,32 @@ namespace ChatikSDavidom.Components.Client
             if (count <= 0)
                 return;
 
-            Array.Copy(m_Buffer, m_Received, count);
+            var received = new byte[count];
 
-            m_Stream.BeginRead(m_Buffer, 0 , BufferSize, ReadAsync, null);
+            Array.Copy(m_ReceiveBuffer, received, count);
+
+            HandleReceived(received);
+            BeginRead();
+        }
+
+        private void HandleReceived(byte[] bytes)
+        {
+            Packet packet = new(bytes);
+
+            switch (packet.Type)
+            {
+                case PacketType.Welcome:
+                    var welcome = new Welcome(bytes);
+                    Chat.SendMessage(welcome.ToString());
+                    break;
+                case PacketType.Message:
+                    var message = new UserMessage(bytes);
+                    Chat.SendMessage(message.ToString());
+                    break;
+                case PacketType.Command:
+                    Connected = false;
+                    break;
+            }
         }
     }
 }
