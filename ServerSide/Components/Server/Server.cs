@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
-using ChatikSDavidom.Components.Net;
 using Common.Net.ConcretePackets;
+using Common.Net;
+using Common.Chat;
+using Common.Messages;
 
 namespace ServerSide.Components
 {
@@ -41,16 +43,34 @@ namespace ServerSide.Components
 
         private void OnReceivedConnection(IAsyncResult result)
         {
-            var tcp = m_Listener.EndAcceptTcpClient(result);
+            try
+            {
+                var tcp = m_Listener.EndAcceptTcpClient(result);
 
-            if (tcp == null)
-                return;
+                if (tcp == null)
+                    return;
+                
+                var client = new Client(tcp, m_CurrentClientId, this);
 
-            m_ConnectedClients.Add(new Client(tcp, m_CurrentClientId++, this));
+                if (m_CurrentClientId == MaxClients)
+                {
+                    client.Send(new Command(Commands.ClientDisconnect));
+                    client.Tcp.Close();
+                    return;
+                }
 
-            if (m_CurrentClientId == MaxClients) return;
+                m_CurrentClientId++;
+                m_ConnectedClients.Add(client);
 
-            BeginReceiveConnection();
+            }
+            catch (Exception e)
+            {
+                Chat.SendException(e);
+            }
+            finally
+            {
+                BeginReceiveConnection();
+            }
         }
 
         public void Stop()
@@ -88,7 +108,11 @@ namespace ServerSide.Components
 
         public static void Log(string format, params object[] args) 
         {
-            Console.WriteLine(string.Format(format, args));
+            Chat.SendMessage(string.Format(format, args));
+        }
+        public static void Log(Formatter formatter)
+        {
+            Chat.SendMessage(formatter);
         }
     }
 }

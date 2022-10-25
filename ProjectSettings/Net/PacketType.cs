@@ -1,9 +1,8 @@
-﻿namespace ChatikSDavidom.Components.Net
+﻿namespace Common.Net;
+
+public enum PacketType : int
 {
-    public enum PacketType : int
-    {
-        Welcome = 0,
-        Message,
-        Command
-    }
+    Welcome = 0,
+    Message,
+    Command
 }

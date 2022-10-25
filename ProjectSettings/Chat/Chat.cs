@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Common.Messages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClientSide.Components
+namespace Common.Chat
 {
-    internal static class Chat
+    public static class Chat
     {
         public static ConsoleColor MessageColor
         {
@@ -29,6 +30,10 @@ namespace ClientSide.Components
             for (int i = 0; i < SpacesBetweenMessages; i++)
                 Console.WriteLine("\n");
         }
+        public static void SendMessage(Formatter formatter)
+        {
+            SendMessage(formatter.ToString());
+        }
 
         public static object ReadMessage()
         {
@@ -36,6 +41,9 @@ namespace ClientSide.Components
             return Console.ReadLine();
         }
 
-
+        public static void SendException(Exception e)
+        {
+            SendMessage($"~~~~~~~~~EXCEPTION~~~~~~~~~\t\t\t" + $"\tType: {e.GetType().Name}\t\t\t" + $"Location: {e.Source}\t\t\t" + $"{e.Message}");
+        }
     }
 }

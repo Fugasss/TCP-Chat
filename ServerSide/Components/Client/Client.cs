@@ -1,5 +1,6 @@
-﻿using ChatikSDavidom.Components.Net;
-using Common;
+﻿using Common;
+using Common.Chat;
+using Common.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +41,8 @@ namespace ServerSide.Components
 
         public void Send(byte[] bytes)
         {
+            if (!Tcp.Connected) return;
+
             Array.Copy(bytes, m_SendBuffer, bytes.Length);
 
             m_Stream.BeginWrite(m_SendBuffer, 0, bytes.Length, null, null);
@@ -47,22 +50,43 @@ namespace ServerSide.Components
 
         private void BeginRead()
         {
+            if (!Tcp.Connected) 
+            {
+                Tcp.Close();
+                return; 
+            }
             m_Stream.BeginRead(m_ReceiveBuffer, 0, Settings.MaxBufferSize, ReadAsync, null);
         }
 
         private void ReadAsync(IAsyncResult result)
         {
-            var count = m_Stream.EndRead(result);
+            try
+            {
+                var count = m_Stream.EndRead(result);
 
-            if (count <= 0)
-                return;
+                if (count <= 0)
+                    return;
 
-            var received = new byte[count];
+                var received = new byte[count];
 
-            Array.Copy(m_ReceiveBuffer, received, count);
+                Array.Copy(m_ReceiveBuffer, received, count);
 
-            m_Server.HandlePacket(this, received);
-            BeginRead();
+                m_Server.HandlePacket(this, received);
+            }
+            catch (Exception e)
+            {
+                Chat.SendException(e);
+
+                if(e is IOException)
+                {
+                    Tcp.Close();
+                }
+            }
+            finally
+            {
+                BeginRead();
+            }
+
         }
 
 

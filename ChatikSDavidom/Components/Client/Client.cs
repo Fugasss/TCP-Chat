@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Net;
-using ChatikSDavidom.Components;
-using ChatikSDavidom.Components.Net;
 using Common;
-using ClientSide.Components;
 using Common.Net.ConcretePackets;
+using Common.Net;
+using Common.Chat;
 
 namespace ChatikSDavidom.Components.Client
 {
@@ -20,17 +14,16 @@ namespace ChatikSDavidom.Components.Client
             m_Address = address;
             m_Port = port;
             Name = name;
-            m_Client = new TcpClient(address.ToString(), port);
-            m_Stream = m_Client.GetStream();
-            Connected = true;
+            m_Tcp = new TcpClient(address.ToString(), port);
+            m_Stream = m_Tcp.GetStream();
 
             BeginRead();
         }
 
-        public bool Connected { get; private set; }
+        public bool Connected => m_Tcp.Connected;
         public string Name { get; }
 
-        private TcpClient m_Client;
+        private TcpClient m_Tcp;
         private NetworkStream m_Stream;
         private readonly IPAddress m_Address;
         private readonly int m_Port;
@@ -40,9 +33,6 @@ namespace ChatikSDavidom.Components.Client
 
         public void Send(Packet packet)
         {
-            //if(packet is )
-            //Chat.SendMessage(packet.ToString());
-
             var bytes = packet.GetBytes();
             Array.Copy(bytes, m_SendBuffer, bytes.Length);
 
@@ -51,22 +41,35 @@ namespace ChatikSDavidom.Components.Client
 
         private void BeginRead()
         {
+            if (!m_Tcp.Connected) return;
+
             m_Stream.BeginRead(m_ReceiveBuffer, 0, Settings.MaxBufferSize, ReadAsync, null);
         }
 
         private void ReadAsync(IAsyncResult result)
         {
-            var count = m_Stream.EndRead(result);
+            try
+            {
+                var count = m_Stream.EndRead(result);
 
-            if (count <= 0)
-                return;
+                if (count <= 0)
+                    return;
 
-            var received = new byte[count];
+                var received = new byte[count];
 
-            Array.Copy(m_ReceiveBuffer, received, count);
+                Array.Copy(m_ReceiveBuffer, received, count);
 
-            HandleReceived(received);
-            BeginRead();
+                HandleReceived(received);
+            }
+            catch (Exception e)
+            {
+                Chat.SendException(e);
+                m_Tcp.Close();
+            }
+            finally
+            {
+                BeginRead();
+            }
         }
 
         private void HandleReceived(byte[] bytes)
@@ -87,8 +90,7 @@ namespace ChatikSDavidom.Components.Client
                     var command = new Command(bytes);
                     if (command.CommandType is Commands.ClientDisconnect or Commands.ServerStop)
                     {
-                        Connected = false;
-                        m_Client.Close();
+                        m_Tcp.Close();
                     }
                     break;
             }

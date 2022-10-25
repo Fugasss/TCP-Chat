@@ -1,4 +1,4 @@
-﻿using ChatikSDavidom.Components.Net;
+﻿using Common.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +33,7 @@ namespace Common.Net.ConcretePackets
 
         public override string ToString()
         {
-            return string.Format("{0}\t\t {1}: {2}", Time, Name, Message);
+            return new Formatter(Time, "< " + Name + " >", Message).ToString();
         }
     }
 }

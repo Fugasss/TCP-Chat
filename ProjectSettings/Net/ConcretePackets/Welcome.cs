@@ -1,9 +1,4 @@
-﻿using ChatikSDavidom.Components.Net;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Common.Messages;
 
 namespace Common.Net.ConcretePackets
 {
@@ -29,7 +24,7 @@ namespace Common.Net.ConcretePackets
 
         public override string ToString()
         {
-            return string.Format("{0}\t\t {1} was connected!", Time, Name);
+            return new Formatter(Time, "Welcome", Name + " was connected!").ToString();
         }
     }
 }

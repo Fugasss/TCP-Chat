@@ -1,47 +1,58 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Common.Messages;
 
-public enum Format : int
-{
-    Log = 0,
-    Error
-}
-
 public class Formatter
 {
-    public const int TimeCharsCount = 10;
-    public const int LabelCharsCount = 18;
-
-    private Format m_Format;
+    public const int TimeCharsCount = 12;
+    public const int LabelCharsCount = 20;
 
     private string m_Time;
     private string m_Label;
     private string m_Message;
 
-    private string m_TimeString = new(TimeCharsCount);
-    private string m_LabelString = new(LabelCharsCount);
+    private char[] m_TimeString = new char[TimeCharsCount];
+    private char[] m_LabelString = new char[LabelCharsCount];
 
-
-    public Formatter(Format format, string time, string label, string message)
+    public Formatter(string time, string label, string message)
     {
-        m_Format = format;    
         m_Time = time;
         m_Label = label;
         m_Message = message;
 
-        ApplyFormat();
-    }   
-
-    private void ApplyFormat()
-    {
-        
+        ApplyFormat(m_TimeString, m_Time);
+        ApplyFormat(m_LabelString, m_Label);
     }
 
-    public override void ToString()
+    private void ApplyFormat(char[] str, string input)
     {
-        return m_TimeString + m_LabelString + m_Message;
+        int i = -1;
+
+        if (str.Length > input.Length)
+        {
+            while (i++ < input.Length - 1)
+                str[i] = input[i];
+        }
+        else
+        {
+            while (i++ < str.Length - 4)
+                str[i] = input[i];
+
+            str[str.Length - 3] = '.';
+            str[str.Length - 2] = '.';
+            str[str.Length - 1] = ' ';
+        }
+
+    }
+
+    public override string ToString()
+    {
+        var time = new string(m_TimeString);
+        var label = new string(m_LabelString);
+        var result = time.AlignCenter(TimeCharsCount) + label.AlignCenter(LabelCharsCount) + m_Message;
+        return result;
     }
 
 }

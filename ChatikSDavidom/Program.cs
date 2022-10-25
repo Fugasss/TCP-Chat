@@ -1,6 +1,5 @@
 ﻿using ChatikSDavidom.Components.Client;
-using ChatikSDavidom.Components.Net;
-using ClientSide.Components;
+using Common.Chat;
 using Common.Net.ConcretePackets;
 using System.Net;
 
@@ -26,3 +25,7 @@ while (client.Connected)
     if (string.IsNullOrEmpty(message)) continue;
     client.Send(new UserMessage(client.Name, message));
 }
+
+Chat.MessageColor = ConsoleColor.Red;
+Chat.SendMessage("\t\tServer was closed!\t\t");
+Chat.MessageColor = ConsoleColor.White;
