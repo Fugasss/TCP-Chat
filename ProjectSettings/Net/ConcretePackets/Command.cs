@@ -16,26 +16,26 @@ namespace Common.Net.ConcretePackets
     public class Command : Packet
     {
         public readonly string Time;
-        public readonly int CommandType;
+        public readonly Commands CommandType;
 
-        public Command(int command) : base(PacketType.Command)
+        public Command(Commands command) : base(PacketType.Command)
         {
             CommandType = command;
             Time = DateTime.Now.ToString(Settings.DateFormat);
 
-            Write(CommandType);
+            Write((int)CommandType);
             Write(Time);
         }
 
         public Command(byte[] bytes) : base(bytes)
         {
-            CommandType = ReadFromStart<int>();
+            CommandType = (Commands)ReadFromStart<int>();
             Time = ReadFromStart<string>();
         }
 
         public override string ToString()
         {
-            return string.Format("{0}\t\t ~ {1} ~", Time, (Commands)CommandType);
+            return string.Format("{0}\t\t ~ {1} ~", Time, CommandType);
         }
     }
 }

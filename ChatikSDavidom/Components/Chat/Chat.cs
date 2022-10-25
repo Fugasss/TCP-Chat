@@ -19,6 +19,7 @@ namespace ClientSide.Components
             set => Console.BackgroundColor = value;
         }
         public static int SpacesBetweenMessages { get; private set; }
+        public static string SendCharacter { get; set; } = ">";
 
 
         public static void SendMessage(string message)
@@ -26,8 +27,13 @@ namespace ClientSide.Components
             Console.WriteLine(message);
 
             for (int i = 0; i < SpacesBetweenMessages; i++)
-                Console.Write("\n");
+                Console.WriteLine("\n");
+        }
 
+        public static object ReadMessage()
+        {
+            Console.Write(SendCharacter + " ");
+            return Console.ReadLine();
         }
 
 

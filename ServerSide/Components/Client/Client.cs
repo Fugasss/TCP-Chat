@@ -34,6 +34,12 @@ namespace ServerSide.Components
         public void Send(Packet packet)
         {
             var bytes = packet.GetBytes();
+
+            Send(bytes);
+        }
+
+        public void Send(byte[] bytes)
+        {
             Array.Copy(bytes, m_SendBuffer, bytes.Length);
 
             m_Stream.BeginWrite(m_SendBuffer, 0, bytes.Length, null, null);

@@ -1,20 +1,28 @@
 ﻿using ChatikSDavidom.Components.Client;
 using ChatikSDavidom.Components.Net;
+using ClientSide.Components;
 using Common.Net.ConcretePackets;
 using System.Net;
 
 string ip = "127.0.0.1";
-string port = "7777";
+int port = 7777;
+string name = "ABOBA";
 
+Chat.SendMessage("Enter IP: ");
+ip = (string)Chat.ReadMessage();
 
-Client client = new(IPAddress.Parse(ip), int.Parse(port), $"Test {new Random().Next(0, 1000)}");
+Chat.SendMessage("Enter Port: ");
+port = int.Parse((string)Chat.ReadMessage());
+
+Chat.SendMessage("Enter Your Name: ");
+name = (string)Chat.ReadMessage();
+
+Client client = new(IPAddress.Parse(ip), port, name);
 client.Send(new Welcome(client.Name));
-
-
-int messageCount = 0;
 
 while (client.Connected)
 {
-    await Task.Delay(5000);
-    client.Send(new UserMessage(client.Name, $"{++messageCount}"));
+    var message = (string)Chat.ReadMessage();
+    if (string.IsNullOrEmpty(message)) continue;
+    client.Send(new UserMessage(client.Name, message));
 }

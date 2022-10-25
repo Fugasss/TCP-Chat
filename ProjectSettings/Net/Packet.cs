@@ -82,8 +82,33 @@ namespace ChatikSDavidom.Components.Net
             var bytes = ObjectToBytes(obj, out var offset);
             m_Bytes.InsertRange(0, bytes);
             m_Index += offset;
-
         }
+        public void RemoveFromStart<T>()
+        {
+            var type = typeof(T);
+            byte[] bytes;
+
+            if (type == typeof(string) || type == typeof(DateTime))
+            {
+                bytes = m_Bytes.GetRange(m_Index, IntSize).ToArray();
+                var length = BitConverter.ToInt32(bytes);
+                m_Index -= IntSize;
+
+                m_Bytes.RemoveRange(m_Index, length);
+                m_Index -= length;
+            }
+            else if (type == typeof(int))
+            {
+                m_Bytes.RemoveRange(m_Index, IntSize);
+                m_Index -= IntSize;
+            }
+            else if (type == typeof(double))
+            {
+                m_Bytes.RemoveRange(m_Index, DoubleSize);
+                m_Index -= DoubleSize;
+            }
+        }
+
 
         public T ReadFromStart<T>()
         {

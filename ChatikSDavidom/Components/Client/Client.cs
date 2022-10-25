@@ -40,7 +40,8 @@ namespace ChatikSDavidom.Components.Client
 
         public void Send(Packet packet)
         {
-            Chat.SendMessage(packet.ToString());
+            //if(packet is )
+            //Chat.SendMessage(packet.ToString());
 
             var bytes = packet.GetBytes();
             Array.Copy(bytes, m_SendBuffer, bytes.Length);
@@ -83,7 +84,12 @@ namespace ChatikSDavidom.Components.Client
                     Chat.SendMessage(message.ToString());
                     break;
                 case PacketType.Command:
-                    Connected = false;
+                    var command = new Command(bytes);
+                    if (command.CommandType is Commands.ClientDisconnect or Commands.ServerStop)
+                    {
+                        Connected = false;
+                        m_Client.Close();
+                    }
                     break;
             }
         }

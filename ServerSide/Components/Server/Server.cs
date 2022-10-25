@@ -68,19 +68,19 @@ namespace ServerSide.Components
                     Welcome welcome = new(bytes);
                     sender.Name = welcome.Name;
                     Log(welcome.ToString());
-                    SendExclude(sender, packet);
+                    SendExclude(sender, bytes);
                     break;
                 case PacketType.Message:
                     UserMessage message = new(bytes);
                     Log(message.ToString());
-                    SendExclude(sender, packet);
+                    SendExclude(sender, bytes);
                     break;
                 case PacketType.Command:
                     break;
             }
         }
 
-        private void SendExclude(Client sender, Packet packet)
+        private void SendExclude(Client sender, byte[] packet)
         {
             foreach (var client in m_ConnectedClients.Where(x => x.Id != sender.Id))
                 client.Send(packet);
