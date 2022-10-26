@@ -20,19 +20,23 @@ namespace Common.Chat
             set => Console.BackgroundColor = value;
         }
         public static int SpacesBetweenMessages { get; private set; }
-        public static string SendCharacter { get; set; } = ">";
+        public static string SendCharacter { get; set; } = "> ";
 
 
-        public static void SendMessage(string message)
+        public static void SendMessage(string message, ConsoleColor color = ConsoleColor.White)
         {
+            var previousColor = MessageColor;
+
+            MessageColor = color;
             Console.WriteLine(message);
+            MessageColor = previousColor;
 
             for (int i = 0; i < SpacesBetweenMessages; i++)
                 Console.WriteLine("\n");
         }
-        public static void SendMessage(Formatter formatter)
+        public static void SendMessage(Formatter formatter, ConsoleColor color = ConsoleColor.White)
         {
-            SendMessage(formatter.ToString());
+            SendMessage(formatter.ToString(), color);
         }
 
         public static object ReadMessage()
@@ -43,7 +47,7 @@ namespace Common.Chat
 
         public static void SendException(Exception e)
         {
-            SendMessage($"~~~~~~~~~EXCEPTION~~~~~~~~~\t\t\t" + $"\tType: {e.GetType().Name}\t\t\t" + $"Location: {e.Source}\t\t\t" + $"{e.Message}");
+            SendMessage($"~~~~~~~~~EXCEPTION~~~~~~~~~\t\t\t" + $"\tType: {e.GetType().Name}\t\t\t" + $"Location: {e.Source}\t\t\t" + $"{e.Message}", ConsoleColor.Red);
         }
     }
 }

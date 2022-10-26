@@ -44,9 +44,9 @@ public class Packet
             case DateTime:
                 string str = (string)obj ?? ((DateTime)obj).ToString(Settings.DateFormat);
 
-                var length = str.Length;
-                var lenBytes = BitConverter.GetBytes(length).ToList();
                 var strBytes = Encoding.UTF8.GetBytes(str);
+                var length = strBytes.Length;
+                var lenBytes = BitConverter.GetBytes(length).ToList();
 
                 lenBytes.AddRange(strBytes);
 
