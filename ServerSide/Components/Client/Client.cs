@@ -50,10 +50,10 @@ namespace ServerSide.Components
 
         private void BeginRead()
         {
-            if (!Tcp.Connected) 
+            if (!Tcp.Connected)
             {
                 Tcp.Close();
-                return; 
+                return;
             }
             m_Stream.BeginRead(m_ReceiveBuffer, 0, Settings.MaxBufferSize, ReadAsync, null);
         }
@@ -77,7 +77,7 @@ namespace ServerSide.Components
             {
                 Chat.SendException(e);
 
-                if(e is IOException)
+                if (e is IOException)
                 {
                     Tcp.Close();
                 }
@@ -89,6 +89,10 @@ namespace ServerSide.Components
 
         }
 
+        public void Stop()
+        {
+            Tcp?.Close();
+        }
 
     }
 }

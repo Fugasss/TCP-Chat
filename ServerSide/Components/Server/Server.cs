@@ -49,7 +49,7 @@ namespace ServerSide.Components
 
                 if (tcp == null)
                     return;
-                
+
                 var client = new Client(tcp, m_CurrentClientId, this);
 
                 if (m_CurrentClientId == MaxClients)
@@ -96,6 +96,12 @@ namespace ServerSide.Components
                     SendExclude(sender, bytes);
                     break;
                 case PacketType.Command:
+                    Command command = new(bytes);
+                    if (command.CommandType == Commands.ClientDisconnect)
+                    {
+                        sender.Stop();
+                        Chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Disconnected", "Bye bye " + sender.Name), ConsoleColor.Green);
+                    }
                     break;
             }
         }
@@ -106,7 +112,7 @@ namespace ServerSide.Components
                 client.Send(packet);
         }
 
-        public static void Log(string format, params object[] args) 
+        public static void Log(string format, params object[] args)
         {
             Chat.SendMessage(string.Format(format, args));
         }

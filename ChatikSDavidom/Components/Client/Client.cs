@@ -31,13 +31,34 @@ namespace ChatikSDavidom.Components.Client
         private byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
         private byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
 
-        public void Send(Packet packet)
+        private Action m_OnCompleteSendAction = null;
+
+        public void Send(Packet packet, Action onSendCompleted = null)
         {
+            m_OnCompleteSendAction = onSendCompleted;
+
             var bytes = packet.GetBytes();
             Array.Copy(bytes, m_SendBuffer, bytes.Length);
 
-            m_Stream.BeginWrite(m_SendBuffer, 0, bytes.Length, null, null);
+            m_Stream.BeginWrite(m_SendBuffer, 0, bytes.Length, EndWrite, null);
+            
         }
+        private void EndWrite(IAsyncResult result)
+        {
+            try
+            {
+                m_Stream.EndWrite(result);
+
+                m_OnCompleteSendAction?.Invoke();
+                m_OnCompleteSendAction = null;
+
+            }
+            catch (Exception e)
+            {
+                Chat.SendException(e);
+            }
+        }
+
 
         private void BeginRead()
         {
@@ -94,6 +115,11 @@ namespace ChatikSDavidom.Components.Client
                     }
                     break;
             }
+        }
+
+        public void Stop() 
+        {
+            m_Tcp.Close();
         }
     }
 }

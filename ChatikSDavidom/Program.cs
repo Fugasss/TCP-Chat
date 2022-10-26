@@ -3,20 +3,32 @@ using Common.Chat;
 using Common.Net.ConcretePackets;
 using System.Net;
 
-string ip = "127.0.0.1";
+string ip = "";
 int port = 7777;
-string name = "ABOBA";
+string name = "";
 
-Chat.SendMessage("Enter IP: ");
-ip = (string)Chat.ReadMessage();
+do
+{
+    Chat.SendMessage("Enter IP: ");
+    ip = (string)Chat.ReadMessage();
+}
+while (string.IsNullOrEmpty(ip));
 
-Chat.SendMessage("Enter Port: ");
-port = int.Parse((string)Chat.ReadMessage());
+do
+    Chat.SendMessage("Enter Port: ");
+while (!int.TryParse((string)Chat.ReadMessage(), out port));
 
-Chat.SendMessage("Enter Your Name: ");
-name = (string)Chat.ReadMessage();
+do
+{
+    Chat.SendMessage("Enter Your Name: ");
+    name = (string)Chat.ReadMessage();
+}
+while (string.IsNullOrEmpty(name));
 
 Client client = new(IPAddress.Parse(ip), port, name);
+
+AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+
 client.Send(new Welcome(client.Name));
 
 while (client.Connected)
@@ -26,6 +38,9 @@ while (client.Connected)
     client.Send(new UserMessage(client.Name, message));
 }
 
-Chat.MessageColor = ConsoleColor.Red;
-Chat.SendMessage("\t\tServer was closed!\t\t");
-Chat.MessageColor = ConsoleColor.White;
+Chat.SendMessage("\t\tServer was closed!\t\t", ConsoleColor.Red);
+
+void CurrentDomain_ProcessExit(object? sender, EventArgs e)
+{
+    client.Send(new Command(Commands.ClientDisconnect), () => client.Stop());
+}
