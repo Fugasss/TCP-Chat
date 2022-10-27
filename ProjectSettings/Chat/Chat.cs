@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Common.Chat
 {
-    public static class Chat
+    public class ConsoleChat : IChat
     {
         public static ConsoleColor MessageColor
         {
@@ -23,7 +23,7 @@ namespace Common.Chat
         public static string SendCharacter { get; set; } = "> ";
 
 
-        public static void SendMessage(string message, ConsoleColor color = ConsoleColor.White)
+        public void SendMessage(string message, ConsoleColor color = ConsoleColor.White)
         {
             var previousColor = MessageColor;
 
@@ -34,20 +34,19 @@ namespace Common.Chat
             for (int i = 0; i < SpacesBetweenMessages; i++)
                 Console.WriteLine("\n");
         }
-        public static void SendMessage(Formatter formatter, ConsoleColor color = ConsoleColor.White)
+        public void SendMessage(Formatter formatter, ConsoleColor color = ConsoleColor.White)
         {
             SendMessage(formatter.ToString(), color);
         }
+        public void SendException(Exception e)
+        {
+            SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "EXCEPTION", $"Type: {e.GetType().Name}\t\t\t" + $"Location: {e.Source}\t\t\t" + $"{e.Message}"), ConsoleColor.Red);
+        }
 
-        public static object ReadMessage()
+        public object ReadMessage()
         {
             Console.Write(SendCharacter + " ");
             return Console.ReadLine();
-        }
-
-        public static void SendException(Exception e)
-        {
-            SendMessage($"~~~~~~~~~EXCEPTION~~~~~~~~~\t\t\t" + $"\tType: {e.GetType().Name}\t\t\t" + $"Location: {e.Source}\t\t\t" + $"{e.Message}", ConsoleColor.Red);
         }
     }
 }

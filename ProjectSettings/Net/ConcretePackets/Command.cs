@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.Messages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ namespace Common.Net.ConcretePackets
     public enum Commands : int
     {
         ClientDisconnect = 0,
+        ConnectDeny,
         ServerStop,
     }
 
@@ -34,7 +36,8 @@ namespace Common.Net.ConcretePackets
 
         public override string ToString()
         {
-            return string.Format("{0}\t\t ~ {1} ~", Time, CommandType);
+            return new Formatter(Time, CommandType.ToString(), "").ToString();
+
         }
     }
 }

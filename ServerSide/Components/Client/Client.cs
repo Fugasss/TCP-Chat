@@ -12,10 +12,11 @@ namespace ServerSide.Components
 {
     internal class Client
     {
-        public Client(TcpClient tcp, int id, IServer server)
+        public Client(TcpClient tcp, int id, IServer server, IChat chat)
         {
             Tcp = tcp;
             Id = id;
+            m_Chat = chat;
             m_Server = server;
             m_Stream = tcp.GetStream();
 
@@ -31,6 +32,8 @@ namespace ServerSide.Components
         private readonly IServer m_Server;
         private byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
         private byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
+
+        private IChat m_Chat;
 
         public void Send(Packet packet)
         {
@@ -75,7 +78,7 @@ namespace ServerSide.Components
             }
             catch (Exception e)
             {
-                Chat.SendException(e);
+                m_Chat.SendException(e);
 
                 if (e is IOException)
                 {

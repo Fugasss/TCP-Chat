@@ -14,9 +14,11 @@ namespace ServerSide.Components
 {
     internal class Server : IServer
     {
-        public Server(int port, int maxClients)
+        public Server(int port, int maxClients, IChat chat)
         {
+            m_Chat = chat;
             m_Listener = new TcpListener(IPAddress.Any, port);
+            m_ConnectedClients = new(maxClients);
             Port = port;
             MaxClients = maxClients;
         }
@@ -30,9 +32,10 @@ namespace ServerSide.Components
 
         private int m_CurrentClientId;
 
+        private IChat m_Chat;
+
         public void Start()
         {
-            m_ConnectedClients = new List<Client>(MaxClients);
             m_Listener.Start();
             Connected = true;
             BeginReceiveConnection();
@@ -40,10 +43,10 @@ namespace ServerSide.Components
 
         private void BeginReceiveConnection()
         {
-            m_Listener.BeginAcceptTcpClient(OnReceivedConnection, null);
+            m_Listener.BeginAcceptTcpClient(OnConnectionReceived, null);
         }
 
-        private void OnReceivedConnection(IAsyncResult result)
+        private void OnConnectionReceived(IAsyncResult result)
         {
             try
             {
@@ -52,12 +55,15 @@ namespace ServerSide.Components
                 if (tcp == null)
                     return;
 
-                var client = new Client(tcp, m_CurrentClientId, this);
+                var client = new Client(tcp, m_CurrentClientId, this, m_Chat);
 
-                if (m_CurrentClientId == MaxClients)
+                if (m_ConnectedClients.Count == MaxClients)
                 {
-                    client.Send(new Command(Commands.ClientDisconnect));
-                    client.Tcp.Close();
+                    if (client.Tcp.Connected)
+                    {
+                        client.Send(new Command(Commands.ConnectDeny));
+                        client.Tcp.Close();
+                    }
                     return;
                 }
 
@@ -67,7 +73,7 @@ namespace ServerSide.Components
             }
             catch (Exception e)
             {
-                Chat.SendException(e);
+                m_Chat.SendException(e);
             }
             finally
             {
@@ -91,12 +97,12 @@ namespace ServerSide.Components
                 case PacketType.Welcome:
                     Welcome welcome = new(bytes);
                     sender.Name = welcome.Name;
-                    Log(welcome.ToString());
+                    m_Chat.SendMessage(welcome.ToString());
                     SendExclude(sender, bytes);
                     break;
                 case PacketType.Message:
                     UserMessage message = new(bytes);
-                    Log(message.ToString());
+                    m_Chat.SendMessage(message.ToString());
                     SendExclude(sender, bytes);
                     break;
                 case PacketType.Command:
@@ -104,7 +110,7 @@ namespace ServerSide.Components
                     if (command.CommandType == Commands.ClientDisconnect)
                     {
                         sender.Stop();
-                        Chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Disconnected", "Bye bye " + sender.Name), ConsoleColor.Green);
+                        m_Chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Disconnected", "Bye bye " + sender.Name), ConsoleColor.Green);
                     }
                     break;
             }
@@ -115,19 +121,10 @@ namespace ServerSide.Components
             foreach (var client in m_ConnectedClients.Where(x => x.Id != sender.Id))
                 client.Send(packet);
         }
-        public void SendAll(byte[] packet)
+        private void SendAll(byte[] packet)
         {
             foreach(var client in m_ConnectedClients)
                 client.Send(packet);
-        }
-
-        public static void Log(string format, params object[] args)
-        {
-            Chat.SendMessage(string.Format(format, args));
-        }
-        public static void Log(Formatter formatter)
-        {
-            Chat.SendMessage(formatter);
         }
     }
 }

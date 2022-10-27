@@ -9,11 +9,12 @@ namespace ChatikSDavidom.Components.Client
 {
     public class Client
     {
-        public Client(IPAddress address, int port, string name)
+        public Client(IPAddress address, int port, string name, IChat chat)
         {
             m_Address = address;
             m_Port = port;
             Name = name;
+            m_Chat = chat;
             m_Tcp = new TcpClient(address.ToString(), port);
             m_Stream = m_Tcp.GetStream();
 
@@ -32,16 +33,20 @@ namespace ChatikSDavidom.Components.Client
         private byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
 
         private Action m_OnCompleteSendAction = null;
+        private IChat m_Chat;
 
         public void Send(Packet packet, Action onSendCompleted = null)
         {
+            if (!m_Tcp.Connected) return;
+            if (!m_Stream.CanWrite) return;
+
             m_OnCompleteSendAction = onSendCompleted;
 
             var bytes = packet.GetBytes();
             Array.Copy(bytes, m_SendBuffer, bytes.Length);
 
             m_Stream.BeginWrite(m_SendBuffer, 0, bytes.Length, EndWrite, null);
-            
+
         }
         private void EndWrite(IAsyncResult result)
         {
@@ -55,7 +60,7 @@ namespace ChatikSDavidom.Components.Client
             }
             catch (Exception e)
             {
-                Chat.SendException(e);
+                m_Chat.SendException(e);
             }
         }
 
@@ -84,7 +89,7 @@ namespace ChatikSDavidom.Components.Client
             }
             catch (Exception e)
             {
-                Chat.SendException(e);
+                m_Chat.SendException(e);
                 m_Tcp.Close();
             }
             finally
@@ -101,23 +106,34 @@ namespace ChatikSDavidom.Components.Client
             {
                 case PacketType.Welcome:
                     var welcome = new Welcome(bytes);
-                    Chat.SendMessage(welcome.ToString());
+                    m_Chat.SendMessage(welcome.ToString());
                     break;
                 case PacketType.Message:
                     var message = new UserMessage(bytes);
-                    Chat.SendMessage(message.ToString());
+                    m_Chat.SendMessage(message.ToString());
                     break;
                 case PacketType.Command:
                     var command = new Command(bytes);
-                    if (command.CommandType == Commands.ServerStop)
+
+                    switch (command.CommandType)
                     {
-                        m_Tcp.Close();
+                        case Commands.ClientDisconnect:
+                            break;
+                        case Commands.ConnectDeny:
+                        case Commands.ServerStop:
+                            m_Chat.SendMessage(new Common.Messages.Formatter(DateTime.Now.ToString("HH:mm"), "Disconnect", command.CommandType.ToString()), ConsoleColor.Red);
+
+                            if (m_Tcp.Connected)
+                                m_Tcp.Close();
+
+                            break;
                     }
+
                     break;
             }
         }
 
-        public void Stop() 
+        public void Stop()
         {
             m_Tcp.Close();
         }
