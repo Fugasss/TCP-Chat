@@ -44,7 +44,6 @@ public class Formatter
             str[str.Length - 2] = '.';
             str[str.Length - 1] = ' ';
         }
-
     }
 
     public override string ToString()
@@ -54,5 +53,4 @@ public class Formatter
         var result = time.AlignCenter(TimeCharsCount) + label.AlignCenter(LabelCharsCount) + m_Message;
         return result;
     }
-
 }

@@ -26,6 +26,7 @@ namespace ServerSide.Components
 
         public int Port { get; }
         public int MaxClients { get; }
+        public bool Connected {get; private set;}
 
         private int m_CurrentClientId;
 
@@ -33,6 +34,7 @@ namespace ServerSide.Components
         {
             m_ConnectedClients = new List<Client>(MaxClients);
             m_Listener.Start();
+            Connected = true;
             BeginReceiveConnection();
         }
 
@@ -76,6 +78,8 @@ namespace ServerSide.Components
         public void Stop()
         {
             m_Listener.Stop();
+            SendAll(new Command(Commands.ServerStop).GetBytes());
+            Connected = false;
         }
 
         public void HandlePacket(Client sender, byte[] bytes)
@@ -109,6 +113,11 @@ namespace ServerSide.Components
         private void SendExclude(Client sender, byte[] packet)
         {
             foreach (var client in m_ConnectedClients.Where(x => x.Id != sender.Id))
+                client.Send(packet);
+        }
+        public void SendAll(byte[] packet)
+        {
+            foreach(var client in m_ConnectedClients)
                 client.Send(packet);
         }
 

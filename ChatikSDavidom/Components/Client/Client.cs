@@ -109,7 +109,7 @@ namespace ChatikSDavidom.Components.Client
                     break;
                 case PacketType.Command:
                     var command = new Command(bytes);
-                    if (command.CommandType is Commands.ClientDisconnect or Commands.ServerStop)
+                    if (command.CommandType == Commands.ServerStop)
                     {
                         m_Tcp.Close();
                     }
