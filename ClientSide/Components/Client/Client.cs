@@ -76,6 +76,9 @@ namespace ChatikSDavidom.Components.Client
         {
             try
             {
+                if (!m_Tcp.Connected)
+                    return;
+
                 var count = m_Stream.EndRead(result);
 
                 if (count <= 0)
@@ -125,7 +128,6 @@ namespace ChatikSDavidom.Components.Client
 
                             if (m_Tcp.Connected)
                                 m_Tcp.Close();
-
                             break;
                     }
 

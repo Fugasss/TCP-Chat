@@ -16,11 +16,14 @@ public class Formatter
     private char[] m_TimeString = new char[TimeCharsCount];
     private char[] m_LabelString = new char[LabelCharsCount];
 
-    public Formatter(string time, string label, string message)
+    public Formatter(string time = "", string label = "", string message = "")
     {
         m_Time = time;
         m_Label = label;
         m_Message = message;
+
+        if(string.IsNullOrEmpty(m_Time))
+            m_Time = DateTime.Now.ToString("HH:mm");
 
         ApplyFormat(m_TimeString, m_Time);
         ApplyFormat(m_LabelString, m_Label);
@@ -40,9 +43,9 @@ public class Formatter
             while (i++ < str.Length - 4)
                 str[i] = input[i];
 
-            str[str.Length - 3] = '.';
-            str[str.Length - 2] = '.';
-            str[str.Length - 1] = ' ';
+            str[^3] = '.';
+            str[^2] = '.';
+            str[^1] = ' ';
         }
     }
 

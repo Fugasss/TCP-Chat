@@ -28,16 +28,34 @@ namespace ServerSide.Components
 
         public int Port { get; }
         public int MaxClients { get; }
-        public bool Connected {get; private set;}
+        public bool Connected { get; private set; }
 
         private int m_CurrentClientId;
 
         private IChat m_Chat;
 
+        public event EventHandler<Formatter> Log;
+        public event EventHandler<EventArgs> Warn;
+        public event EventHandler<EventArgs> Error;
+        public event EventHandler<EventArgs> ClientConnected;
+        public event EventHandler<EventArgs> ClientDisconnected;
+        public event EventHandler<EventArgs> ClientPacketReceived;
+        public event EventHandler<EventArgs> ServerStart;
+        public event EventHandler<EventArgs> ServerStop;
+
         public void Start()
         {
             m_Listener.Start();
             Connected = true;
+
+            Log?.Invoke(this, new Formatter(label: "LOG", message: $"Server Listening on port {Port}"));
+            Log?.Invoke(this,
+                new Formatter(label: "LOG",
+                message: $"Your internal IP: {Dns.GetHostEntry(Dns.GetHostName())
+                                                  .AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork)}"));
+            Log?.Invoke(this, new Formatter(label: "LOG",
+                                            message: $"Your external IP: {new HttpClient().GetStringAsync("https://ipv4.icanhazip.com/").Result}"));
+
             BeginReceiveConnection();
         }
 
@@ -61,14 +79,15 @@ namespace ServerSide.Components
                 {
                     if (client.Tcp.Connected)
                     {
-                        client.Send(new Command(Commands.ConnectDeny));
-                        client.Tcp.Close();
+                        client?.Send(new Command(Commands.ConnectDeny));
+                        client = null;
                     }
                     return;
                 }
 
                 m_CurrentClientId++;
                 m_ConnectedClients.Add(client);
+                client.Start();
 
             }
             catch (Exception e)
@@ -97,7 +116,7 @@ namespace ServerSide.Components
                 case PacketType.Welcome:
                     Welcome welcome = new(bytes);
                     sender.Name = welcome.Name;
-                    m_Chat.SendMessage(welcome.ToString());
+                    m_Chat.SendMessage(welcome.ToString(), ConsoleColor.Green);
                     SendExclude(sender, bytes);
                     break;
                 case PacketType.Message:
@@ -110,7 +129,8 @@ namespace ServerSide.Components
                     if (command.CommandType == Commands.ClientDisconnect)
                     {
                         sender.Stop();
-                        m_Chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Disconnected", "Bye bye " + sender.Name), ConsoleColor.Green);
+                        m_Chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Disconnected", "Bye bye " + sender.Name), ConsoleColor.Cyan);
+                        m_ConnectedClients.Remove(sender);
                     }
                     break;
             }
@@ -123,7 +143,7 @@ namespace ServerSide.Components
         }
         private void SendAll(byte[] packet)
         {
-            foreach(var client in m_ConnectedClients)
+            foreach (var client in m_ConnectedClients)
                 client.Send(packet);
         }
     }

@@ -2,8 +2,6 @@
 using Common.Chat;
 using Common.DI;
 using Common.Net.ConcretePackets;
-using System;
-using System.ComponentModel;
 using System.Net;
 
 internal class Program
@@ -16,7 +14,7 @@ internal class Program
         IChat chat = Container.GetService<ConsoleChat>();
 
         InitClient(chat, out var client);
-        InitProgramEndPoint(client, chat);
+        InitProgramEndPoint(client);
 
         while (client.Connected)
         {
@@ -24,6 +22,8 @@ internal class Program
             if (string.IsNullOrEmpty(message)) continue;
             client.Send(new UserMessage(client.Name, message));
         }
+
+        Console.ReadKey();
     }
 
     private static void InitDI()
@@ -38,18 +38,18 @@ internal class Program
 
         do
         {
-            chat.SendMessage("Enter IP: ");
+            chat.SendMessage("Enter IP: ", ConsoleColor.DarkGreen);
             ip = (string)chat.ReadMessage();
         }
         while (string.IsNullOrEmpty(ip));
 
         do
-            chat.SendMessage("Enter Port: ");
+            chat.SendMessage("Enter Port: ", ConsoleColor.DarkGreen);
         while (!int.TryParse((string)chat.ReadMessage(), out port));
 
         do
         {
-            chat.SendMessage("Enter Your Name: ");
+            chat.SendMessage("Enter Your Name: ", ConsoleColor.DarkGreen);
             name = (string)chat.ReadMessage();
         }
         while (string.IsNullOrEmpty(name));
@@ -59,7 +59,7 @@ internal class Program
         client.Send(new Welcome(client.Name));
 
     }
-    private static void InitProgramEndPoint(Client client, IChat chat)
+    private static void InitProgramEndPoint(Client client)
     {
         AppDomain.CurrentDomain.ProcessExit += (_, _) =>
         {

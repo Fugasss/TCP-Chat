@@ -29,14 +29,17 @@ internal class Program
         int maxConnections;
 
         do
-            chat.SendMessage("Enter listening port");
+            chat.SendMessage("Enter listening port", ConsoleColor.DarkGreen);
         while (!int.TryParse((string)chat.ReadMessage(), out port));
 
         do
-            chat.SendMessage("Enter max connections");
+            chat.SendMessage("Enter max connections", ConsoleColor.DarkGreen);
         while (!int.TryParse((string)chat.ReadMessage(), out maxConnections));
 
         server = new(port, maxConnections, chat);
+
+        server.Log += (sender, message) => chat.SendMessage(message, ConsoleColor.Yellow);
+
         server.Start();
 
         chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Server", "Server started"));

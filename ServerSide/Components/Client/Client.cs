@@ -1,12 +1,7 @@
 ﻿using Common;
 using Common.Chat;
 using Common.Net;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServerSide.Components
 {
@@ -19,8 +14,6 @@ namespace ServerSide.Components
             m_Chat = chat;
             m_Server = server;
             m_Stream = tcp.GetStream();
-
-            BeginRead();
         }
 
         public string Name { get; set; } = "";
@@ -34,6 +27,11 @@ namespace ServerSide.Components
         private byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
 
         private IChat m_Chat;
+
+        public void Start()
+        {
+            BeginRead();
+        }
 
         public void Send(Packet packet)
         {
