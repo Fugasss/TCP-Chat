@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Sockets;
-using System.Net;
-using Common.Net.ConcretePackets;
-using Common.Net;
 using Common.Chat;
 using Common.Messages;
-using System.Reflection.Emit;
+using Common.Net;
+using Common.Net.ConcretePackets;
+using System.Net;
+using System.Net.Sockets;
 
 namespace ServerSide.Components
 {
@@ -24,8 +18,8 @@ namespace ServerSide.Components
             MaxClients = maxClients;
         }
 
-        private TcpListener m_Listener;
-        private List<Client> m_ConnectedClients;
+        private readonly TcpListener m_Listener;
+        private readonly List<Client> m_ConnectedClients;
 
         public int Port { get; }
         public int MaxClients { get; }

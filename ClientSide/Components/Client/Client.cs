@@ -1,9 +1,9 @@
-﻿using System.Net.Sockets;
-using System.Net;
-using Common;
-using Common.Net.ConcretePackets;
-using Common.Net;
+﻿using Common;
 using Common.Chat;
+using Common.Net;
+using Common.Net.ConcretePackets;
+using System.Net;
+using System.Net.Sockets;
 
 namespace ChatikSDavidom.Components.Client
 {
@@ -24,16 +24,16 @@ namespace ChatikSDavidom.Components.Client
         public bool Connected => m_Tcp.Connected;
         public string Name { get; }
 
-        private TcpClient m_Tcp;
-        private NetworkStream m_Stream;
+        private readonly TcpClient m_Tcp;
+        private readonly NetworkStream m_Stream;
         private readonly IPAddress m_Address;
         private readonly int m_Port;
 
-        private byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
-        private byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
+        private readonly byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
+        private readonly byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
 
         private Action m_OnCompleteSendAction = null;
-        private IChat m_Chat;
+        private readonly IChat m_Chat;
 
         public void Send(Packet packet, Action onSendCompleted = null)
         {
@@ -135,7 +135,7 @@ namespace ChatikSDavidom.Components.Client
                     }
 
                     break;
-                
+
             }
         }
 

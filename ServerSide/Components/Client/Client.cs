@@ -23,10 +23,10 @@ namespace ServerSide.Components
 
         private readonly NetworkStream m_Stream;
         private readonly IServer m_Server;
-        private byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
-        private byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
+        private readonly byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
+        private readonly byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
 
-        private IChat m_Chat;
+        private readonly IChat m_Chat;
 
         public void Start()
         {

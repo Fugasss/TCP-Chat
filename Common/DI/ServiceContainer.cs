@@ -3,14 +3,14 @@
 namespace Common.DI;
 public class ServiceContainer : IDIContainer
 {
-    private List<object> m_Services;
+    private readonly List<object> m_Services;
 
     public ServiceContainer(params object[] services)
     {
         m_Services = services.ToList() ?? new();
     }
 
-    public void AddService<TService>([NotNull]TService service)
+    public void AddService<TService>([NotNull] TService service)
     {
         m_Services.Add(service);
     }

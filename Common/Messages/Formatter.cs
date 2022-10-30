@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Common.Messages;
 
 public class Formatter
@@ -9,12 +5,12 @@ public class Formatter
     public const int TimeCharsCount = 12;
     public const int LabelCharsCount = 20;
 
-    private string m_Time;
-    private string m_Label;
-    private string m_Message;
+    private readonly string m_Time;
+    private readonly string m_Label;
+    private readonly string m_Message;
 
-    private char[] m_TimeString = new char[TimeCharsCount];
-    private char[] m_LabelString = new char[LabelCharsCount];
+    private readonly char[] m_TimeString = new char[TimeCharsCount];
+    private readonly char[] m_LabelString = new char[LabelCharsCount];
 
     /// <summary>
     /// Write | time: "-" | to ignore time
