@@ -4,14 +4,14 @@ namespace ServerSide.Components
 {
     internal interface IServer
     {
-        event EventHandler<Formatter> Log;
-        event EventHandler<EventArgs> Warn;
-        event EventHandler<EventArgs> Error;
-        event EventHandler<EventArgs> ClientConnected;
-        event EventHandler<EventArgs> ClientDisconnected;
-        event EventHandler<EventArgs> ClientPacketReceived;
-        event EventHandler<EventArgs> ServerStart;
-        event EventHandler<EventArgs> ServerStop;
+        event Action<Formatter> Log;
+        event Action<Formatter> Warn;
+        event Action<Exception> Error;
+        event Action<Formatter> ClientConnect;
+        event Action<Formatter> ClientDisconnect;
+        event Action<Formatter> ClientMessage;
+        event Action<Formatter> ServerStart;
+        event Action<Formatter> ServerStop;
 
         void Start();
         void Stop();

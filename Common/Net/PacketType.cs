@@ -3,6 +3,7 @@
 public enum PacketType : int
 {
     Welcome = 0,
-    Message,
+    ClientMessage,
+    ServerMessage,
     Command
 }

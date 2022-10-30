@@ -1,4 +1,5 @@
 ﻿using Common;
+using Common.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -145,5 +146,10 @@ public class Packet
     {
         Insert((int)Type);
         return m_Bytes.ToArray();
+    }
+
+    public virtual Formatter ToFormatter()
+    {
+        return new Formatter();
     }
 }

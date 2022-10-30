@@ -16,14 +16,22 @@ public class Formatter
     private char[] m_TimeString = new char[TimeCharsCount];
     private char[] m_LabelString = new char[LabelCharsCount];
 
+    /// <summary>
+    /// Write | time: "-" | to ignore time
+    /// </summary>
+    /// <param name="time"></param>
+    /// <param name="label"></param>
+    /// <param name="message"></param>
     public Formatter(string time = "", string label = "", string message = "")
     {
         m_Time = time;
         m_Label = label;
         m_Message = message;
 
-        if(string.IsNullOrEmpty(m_Time))
+        if (string.IsNullOrEmpty(m_Time))
             m_Time = DateTime.Now.ToString("HH:mm");
+        if (time == "-")
+            m_Time = "";
 
         ApplyFormat(m_TimeString, m_Time);
         ApplyFormat(m_LabelString, m_Label);

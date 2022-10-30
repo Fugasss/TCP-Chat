@@ -38,11 +38,16 @@ internal class Program
 
         server = new(port, maxConnections, chat);
 
-        server.Log += (sender, message) => chat.SendMessage(message, ConsoleColor.Yellow);
+        server.Log += (message) => chat.SendMessage(message, ConsoleColor.Cyan);
+        server.Warn += (warn) => chat.SendMessage(warn, ConsoleColor.Yellow);
+        server.Error += chat.SendException;
+        server.ClientConnect += (formatter) => chat.SendMessage(formatter, ConsoleColor.Green);
+        server.ClientDisconnect += (formatter) => chat.SendMessage(formatter, ConsoleColor.DarkYellow);
+        server.ClientMessage += (formatter) => chat.SendMessage(formatter);
+        server.ServerStop += (formatter) => chat.SendMessage(formatter, ConsoleColor.Red);
+        server.ServerStart += (formatter) => chat.SendMessage(formatter, ConsoleColor.Cyan);
 
         server.Start();
-
-        chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Server", "Server started"));
     }
     private static void InitProgramEndPoint(Server server)
     {

@@ -111,9 +111,13 @@ namespace ChatikSDavidom.Components.Client
                     var welcome = new Welcome(bytes);
                     m_Chat.SendMessage(welcome.ToString());
                     break;
-                case PacketType.Message:
+                case PacketType.ClientMessage:
                     var message = new UserMessage(bytes);
                     m_Chat.SendMessage(message.ToString());
+                    break;
+                case PacketType.ServerMessage:
+                    var serverMessage = new ServerMessage(bytes);
+                    m_Chat.SendMessage(serverMessage.ToString(), ConsoleColor.DarkYellow);
                     break;
                 case PacketType.Command:
                     var command = new Command(bytes);
@@ -121,17 +125,17 @@ namespace ChatikSDavidom.Components.Client
                     switch (command.CommandType)
                     {
                         case Commands.ClientDisconnect:
-                            break;
                         case Commands.ConnectDeny:
                         case Commands.ServerStop:
-                            m_Chat.SendMessage(new Common.Messages.Formatter(DateTime.Now.ToString("HH:mm"), "Disconnect", command.CommandType.ToString()), ConsoleColor.Red);
+                            m_Chat.SendMessage(new Common.Messages.Formatter(label: "DISCONNECT", message: command.CommandType.ToString()), ConsoleColor.Red);
 
                             if (m_Tcp.Connected)
-                                m_Tcp.Close();
+                                m_Tcp?.Close();
                             break;
                     }
 
                     break;
+                
             }
         }
 

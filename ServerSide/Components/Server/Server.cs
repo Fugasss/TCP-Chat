@@ -9,6 +9,7 @@ using Common.Net.ConcretePackets;
 using Common.Net;
 using Common.Chat;
 using Common.Messages;
+using System.Reflection.Emit;
 
 namespace ServerSide.Components
 {
@@ -28,33 +29,28 @@ namespace ServerSide.Components
 
         public int Port { get; }
         public int MaxClients { get; }
-        public bool Connected { get; private set; }
 
         private int m_CurrentClientId;
 
-        private IChat m_Chat;
+        private readonly IChat m_Chat;
 
-        public event EventHandler<Formatter> Log;
-        public event EventHandler<EventArgs> Warn;
-        public event EventHandler<EventArgs> Error;
-        public event EventHandler<EventArgs> ClientConnected;
-        public event EventHandler<EventArgs> ClientDisconnected;
-        public event EventHandler<EventArgs> ClientPacketReceived;
-        public event EventHandler<EventArgs> ServerStart;
-        public event EventHandler<EventArgs> ServerStop;
+        public event Action<Formatter> Log;
+        public event Action<Formatter> Warn;
+        public event Action<Exception> Error;
+        public event Action<Formatter> ClientConnect;
+        public event Action<Formatter> ClientDisconnect;
+        public event Action<Formatter> ClientMessage;
+        public event Action<Formatter> ServerStart;
+        public event Action<Formatter> ServerStop;
 
         public void Start()
         {
             m_Listener.Start();
-            Connected = true;
 
-            Log?.Invoke(this, new Formatter(label: "LOG", message: $"Server Listening on port {Port}"));
-            Log?.Invoke(this,
-                new Formatter(label: "LOG",
-                message: $"Your internal IP: {Dns.GetHostEntry(Dns.GetHostName())
+            ServerStart?.Invoke(new Formatter(label: "START", message: $"Listening on port {Port}"));
+            ServerStart?.Invoke(new Formatter(time: "-", message: $"Internal IP: {Dns.GetHostEntry(Dns.GetHostName())
                                                   .AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork)}"));
-            Log?.Invoke(this, new Formatter(label: "LOG",
-                                            message: $"Your external IP: {new HttpClient().GetStringAsync("https://ipv4.icanhazip.com/").Result}"));
+            ServerStart?.Invoke(new Formatter(time: "-", message: $"External IP: {new HttpClient().GetStringAsync("https://ipv4.icanhazip.com/").Result}"));
 
             BeginReceiveConnection();
         }
@@ -77,6 +73,8 @@ namespace ServerSide.Components
 
                 if (m_ConnectedClients.Count == MaxClients)
                 {
+                    Warn?.Invoke(new Formatter(label: "WARN", message: $"Max count of clients reached. Connection for {client.Tcp.Client.RemoteEndPoint} denied"));
+
                     if (client.Tcp.Connected)
                     {
                         client?.Send(new Command(Commands.ConnectDeny));
@@ -88,11 +86,10 @@ namespace ServerSide.Components
                 m_CurrentClientId++;
                 m_ConnectedClients.Add(client);
                 client.Start();
-
             }
             catch (Exception e)
             {
-                m_Chat.SendException(e);
+                Error?.Invoke(e);
             }
             finally
             {
@@ -104,7 +101,7 @@ namespace ServerSide.Components
         {
             m_Listener.Stop();
             SendAll(new Command(Commands.ServerStop).GetBytes());
-            Connected = false;
+            ServerStop?.Invoke(new Formatter(label: "STOP", message: "Server was stopped"));
         }
 
         public void HandlePacket(Client sender, byte[] bytes)
@@ -116,29 +113,31 @@ namespace ServerSide.Components
                 case PacketType.Welcome:
                     Welcome welcome = new(bytes);
                     sender.Name = welcome.Name;
-                    m_Chat.SendMessage(welcome.ToString(), ConsoleColor.Green);
-                    SendExclude(sender, bytes);
+                    ClientConnect?.Invoke(welcome.ToFormatter());
+                    SendAllExclude(bytes, sender);
                     break;
-                case PacketType.Message:
+                case PacketType.ClientMessage:
                     UserMessage message = new(bytes);
-                    m_Chat.SendMessage(message.ToString());
-                    SendExclude(sender, bytes);
+                    ClientMessage?.Invoke(message.ToFormatter());
+                    SendAllExclude(bytes, sender);
                     break;
                 case PacketType.Command:
                     Command command = new(bytes);
                     if (command.CommandType == Commands.ClientDisconnect)
                     {
                         sender.Stop();
-                        m_Chat.SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "Disconnected", "Bye bye " + sender.Name), ConsoleColor.Cyan);
                         m_ConnectedClients.Remove(sender);
+
+                        ClientDisconnect?.Invoke(new Formatter(label: "Disconnected", message: "Bye-bye " + sender.Name));
+                        SendAllExclude(new ServerMessage("Bye-bye " + sender.Name).GetBytes(), sender);
                     }
                     break;
             }
         }
 
-        private void SendExclude(Client sender, byte[] packet)
+        private void SendAllExclude(byte[] packet, params Client[] clients)
         {
-            foreach (var client in m_ConnectedClients.Where(x => x.Id != sender.Id))
+            foreach (var client in m_ConnectedClients.Except(clients))
                 client.Send(packet);
         }
         private void SendAll(byte[] packet)

@@ -24,7 +24,12 @@ namespace Common.Net.ConcretePackets
 
         public override string ToString()
         {
-            return new Formatter(Time, "Welcome", Name + " was connected!").ToString();
+            return ToFormatter().ToString();
+        }
+
+        public override Formatter ToFormatter()
+        {
+            return new Formatter(Time, "Welcome", Name + " was connected!");
         }
     }
 }

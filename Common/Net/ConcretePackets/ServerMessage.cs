@@ -1,33 +1,28 @@
 ﻿using Common.Messages;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Common.Net.ConcretePackets
 {
-    public class UserMessage : Packet
+    public class ServerMessage : Packet
     {
-        public readonly string Name;
         public readonly string Time;
         public readonly string Message;
 
-        public UserMessage(string name, string message) : base(PacketType.ClientMessage)
+        public ServerMessage(string message) : base(PacketType.ServerMessage)
         {
-            Name = name;
             Message = message;
             Time = DateTime.Now.ToString(Settings.DateFormat);
 
-            Write(Name);
             Write(Time);
             Write(Message);
         }
 
-        public UserMessage(byte[] bytes) : base(bytes)
+        public ServerMessage(byte[] bytes) : base(bytes)
         {
-            Name = ReadFromStart<string>();
             Time = ReadFromStart<string>();
             Message = ReadFromStart<string>();
         }
@@ -38,7 +33,7 @@ namespace Common.Net.ConcretePackets
         }
         public override Formatter ToFormatter()
         {
-            return new Formatter(Time, "< " + Name + " >", Message);
+            return new Formatter(Time, "SERVER", Message);
         }
     }
 }
