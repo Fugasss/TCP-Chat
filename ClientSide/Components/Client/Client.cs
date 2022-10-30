@@ -29,8 +29,8 @@ namespace ChatikSDavidom.Components.Client
         private readonly IPAddress m_Address;
         private readonly int m_Port;
 
-        private readonly byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
-        private readonly byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
+        private readonly byte[] m_ReceiveBuffer = new byte[ProjectSettings.MaxBufferSize];
+        private readonly byte[] m_SendBuffer = new byte[ProjectSettings.MaxBufferSize];
 
         private Action m_OnCompleteSendAction = null;
         private readonly IChat m_Chat;
@@ -69,7 +69,7 @@ namespace ChatikSDavidom.Components.Client
         {
             if (!m_Tcp.Connected) return;
 
-            m_Stream.BeginRead(m_ReceiveBuffer, 0, Settings.MaxBufferSize, ReadAsync, null);
+            m_Stream.BeginRead(m_ReceiveBuffer, 0, ProjectSettings.MaxBufferSize, ReadAsync, null);
         }
 
         private void ReadAsync(IAsyncResult result)

@@ -10,7 +10,7 @@ namespace Common.Net.ConcretePackets
         public Welcome(string name) : base(PacketType.Welcome)
         {
             Name = name;
-            Time = DateTime.Now.ToString(Settings.DateFormat);
+            Time = DateTime.Now.ToString(ProjectSettings.DateFormat);
 
             Write(Name);
             Write(Time);

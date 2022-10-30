@@ -17,7 +17,7 @@ namespace Common.Net.ConcretePackets
         public Command(Commands command) : base(PacketType.Command)
         {
             CommandType = command;
-            Time = DateTime.Now.ToString(Settings.DateFormat);
+            Time = DateTime.Now.ToString(ProjectSettings.DateFormat);
 
             Write((int)CommandType);
             Write(Time);

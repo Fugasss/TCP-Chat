@@ -19,7 +19,7 @@ internal class Program
         while (client.Connected)
         {
             var message = (string)chat.ReadMessage();
-            if (string.IsNullOrEmpty(message)) continue;
+            if (string.IsNullOrWhiteSpace(message)) continue;
             client.Send(new UserMessage(client.Name, message));
         }
 

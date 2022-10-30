@@ -1,4 +1,5 @@
 ﻿using Common.Messages;
+using System.Text;
 
 namespace Common.Chat
 {
@@ -15,7 +16,7 @@ namespace Common.Chat
             set => Console.BackgroundColor = value;
         }
         public static int SpacesBetweenMessages { get; private set; }
-        public static string SendCharacter { get; set; } = "> ";
+        public static string SendCharacter { get; set; } = ">";
 
 
         public void SendMessage(string message, ConsoleColor color = ConsoleColor.White)
@@ -35,12 +36,13 @@ namespace Common.Chat
         }
         public void SendException(Exception e)
         {
-            SendMessage(new Formatter(DateTime.Now.ToString("HH:mm"), "EXCEPTION", $"Type: {e.GetType().Name}\t\t\t" + $"Location: {e.Source}\t\t\t" + $"{e.Message}"), ConsoleColor.Red);
+            SendMessage(new Formatter(label: "EXCEPTION", message: $"Type: {e.GetType().Name}\t\t\t" + $"Location: {e.Source}\t\t\t" + $"{e.Message}"), ConsoleColor.Red);
         }
 
         public object ReadMessage()
         {
             Console.Write(SendCharacter + " ");
+
             return Console.ReadLine();
         }
     }

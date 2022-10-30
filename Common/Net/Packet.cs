@@ -37,7 +37,7 @@ public class Packet
         {
             case string:
             case DateTime:
-                string str = (string)obj ?? ((DateTime)obj).ToString(Settings.DateFormat);
+                string str = (string)obj ?? ((DateTime)obj).ToString(ProjectSettings.DateFormat);
 
                 var strBytes = Encoding.UTF8.GetBytes(str);
                 var length = strBytes.Length;
@@ -139,11 +139,23 @@ public class Packet
     public byte[] GetBytes()
     {
         Insert((int)Type);
-        return m_Bytes.ToArray();
+
+        var bytes = m_Bytes.ToArray();
+
+        if (bytes.Length > ProjectSettings.MaxBufferSize)
+        {
+            throw new OverflowException($"Packet size overflow: {bytes.Length}/{ProjectSettings.MaxBufferSize} Bytes");
+        }
+
+        return bytes;
     }
 
     public virtual Formatter ToFormatter()
     {
-        return new Formatter();
+        return new Formatter("-", label: "PACKET INFO", message: $"Size: {m_Bytes.Count}/{ProjectSettings.MaxBufferSize} Bytes");
+    }
+    public override string ToString()
+    {
+        return ToFormatter().ToString();
     }
 }

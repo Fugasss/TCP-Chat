@@ -4,7 +4,6 @@ namespace ServerSide.Components
 {
     internal interface IServer
     {
-        event Action<Formatter> Log;
         event Action<Formatter> Warn;
         event Action<Exception> Error;
         event Action<Formatter> ClientConnect;

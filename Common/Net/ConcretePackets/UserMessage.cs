@@ -12,7 +12,7 @@ namespace Common.Net.ConcretePackets
         {
             Name = name;
             Message = message;
-            Time = DateTime.Now.ToString(Settings.DateFormat);
+            Time = DateTime.Now.ToString(ProjectSettings.DateFormat);
 
             Write(Name);
             Write(Time);

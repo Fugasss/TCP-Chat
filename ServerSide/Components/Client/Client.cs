@@ -23,8 +23,8 @@ namespace ServerSide.Components
 
         private readonly NetworkStream m_Stream;
         private readonly IServer m_Server;
-        private readonly byte[] m_SendBuffer = new byte[Settings.MaxBufferSize];
-        private readonly byte[] m_ReceiveBuffer = new byte[Settings.MaxBufferSize];
+        private readonly byte[] m_SendBuffer = new byte[ProjectSettings.MaxBufferSize];
+        private readonly byte[] m_ReceiveBuffer = new byte[ProjectSettings.MaxBufferSize];
 
         private readonly IChat m_Chat;
 
@@ -56,7 +56,7 @@ namespace ServerSide.Components
                 Tcp.Close();
                 return;
             }
-            m_Stream.BeginRead(m_ReceiveBuffer, 0, Settings.MaxBufferSize, ReadAsync, null);
+            m_Stream.BeginRead(m_ReceiveBuffer, 0, ProjectSettings.MaxBufferSize, ReadAsync, null);
         }
 
         private void ReadAsync(IAsyncResult result)

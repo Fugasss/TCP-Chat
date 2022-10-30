@@ -9,9 +9,7 @@ internal class Program
     private static async Task Main(string[] args)
     {
         InitDI();
-        IChat chat = Container.GetService<ConsoleChat>();
-
-        InitServer(chat, out var server);
+        InitServer(out var server);
         InitProgramEndPoint(server);
 
         await Task.Delay(-1);
@@ -21,8 +19,10 @@ internal class Program
     {
         Container = new(new ConsoleChat());
     }
-    private static void InitServer(IChat chat, out Server server)
+    private static void InitServer(out Server server)
     {
+        IChat chat = Container.GetService<ConsoleChat>();
+
         int port;
         int maxConnections;
 
@@ -36,7 +36,6 @@ internal class Program
 
         server = new(port, maxConnections, chat);
 
-        server.Log += (message) => chat.SendMessage(message, ConsoleColor.Cyan);
         server.Warn += (warn) => chat.SendMessage(warn, ConsoleColor.Yellow);
         server.Error += chat.SendException;
         server.ClientConnect += (formatter) => chat.SendMessage(formatter, ConsoleColor.Green);
@@ -47,6 +46,7 @@ internal class Program
 
         server.Start();
     }
+
     private static void InitProgramEndPoint(Server server)
     {
         AppDomain.CurrentDomain.ProcessExit += (_, _) => server.Stop();

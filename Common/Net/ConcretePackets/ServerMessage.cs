@@ -10,7 +10,7 @@ namespace Common.Net.ConcretePackets
         public ServerMessage(string message) : base(PacketType.ServerMessage)
         {
             Message = message;
-            Time = DateTime.Now.ToString(Settings.DateFormat);
+            Time = DateTime.Now.ToString(ProjectSettings.DateFormat);
 
             Write(Time);
             Write(Message);

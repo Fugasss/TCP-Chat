@@ -13,7 +13,7 @@ public class Formatter
     private readonly char[] m_LabelString = new char[LabelCharsCount];
 
     /// <summary>
-    /// Write | time: "-" | to ignore time
+    /// Write "-" to ignore time
     /// </summary>
     /// <param name="time"></param>
     /// <param name="label"></param>
@@ -22,15 +22,23 @@ public class Formatter
     {
         m_Time = time;
         m_Label = label;
-        m_Message = message;
+        m_Message = FixNewLines(message);
 
         if (string.IsNullOrEmpty(m_Time))
-            m_Time = DateTime.Now.ToString("HH:mm");
+            m_Time = DateTime.Now.ToString(ProjectSettings.DateFormat);
         if (time == "-")
             m_Time = "";
 
         ApplyFormat(m_TimeString, m_Time);
         ApplyFormat(m_LabelString, m_Label);
+    }
+
+    private string FixNewLines(string message)
+    {
+        message = message.Replace("\n", "\n" + new string(' ', TimeCharsCount + LabelCharsCount));
+        message = message.Replace("\0", " ");
+
+        return message;
     }
 
     private void ApplyFormat(char[] str, string input)

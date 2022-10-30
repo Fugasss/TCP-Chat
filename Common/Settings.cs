@@ -1,6 +1,6 @@
 ﻿namespace Common
 {
-    public static class Settings
+    public static class ProjectSettings
     {
         public static string DateFormat = "HH:mm";
         public static int MaxBufferSize = 4096;

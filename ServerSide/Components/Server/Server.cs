@@ -28,7 +28,6 @@ namespace ServerSide.Components
 
         private readonly IChat m_Chat;
 
-        public event Action<Formatter> Log;
         public event Action<Formatter> Warn;
         public event Action<Exception> Error;
         public event Action<Formatter> ClientConnect;
