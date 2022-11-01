@@ -7,11 +7,10 @@ namespace ServerSide.Components
 {
     internal class Client
     {
-        public Client(TcpClient tcp, int id, IServer server, IChat chat)
+        public Client(TcpClient tcp, int id, IServer server)
         {
             Tcp = tcp;
             Id = id;
-            m_Chat = chat;
             m_Server = server;
             m_Stream = tcp.GetStream();
         }
@@ -25,8 +24,6 @@ namespace ServerSide.Components
         private readonly IServer m_Server;
         private readonly byte[] m_SendBuffer = new byte[ProjectSettings.MaxBufferSize];
         private readonly byte[] m_ReceiveBuffer = new byte[ProjectSettings.MaxBufferSize];
-
-        private readonly IChat m_Chat;
 
         public void Start()
         {
@@ -76,7 +73,7 @@ namespace ServerSide.Components
             }
             catch (Exception e)
             {
-                m_Chat.SendException(e);
+                MyConsoleHelper.WriteLineException(e);
 
                 if (e is IOException)
                 {

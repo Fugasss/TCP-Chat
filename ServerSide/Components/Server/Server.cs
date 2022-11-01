@@ -9,9 +9,8 @@ namespace ServerSide.Components
 {
     internal class Server : IServer
     {
-        public Server(int port, int maxClients, IChat chat)
+        public Server(int port, int maxClients)
         {
-            m_Chat = chat;
             m_Listener = new TcpListener(IPAddress.Any, port);
             m_ConnectedClients = new(maxClients);
             Port = port;
@@ -25,8 +24,6 @@ namespace ServerSide.Components
         public int MaxClients { get; }
 
         private int m_CurrentClientId;
-
-        private readonly IChat m_Chat;
 
         public event Action<Formatter> Warn;
         public event Action<Exception> Error;
@@ -62,7 +59,7 @@ namespace ServerSide.Components
                 if (tcp == null)
                     return;
 
-                var client = new Client(tcp, m_CurrentClientId, this, m_Chat);
+                var client = new Client(tcp, m_CurrentClientId, this);
 
                 if (m_ConnectedClients.Count == MaxClients)
                 {

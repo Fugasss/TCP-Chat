@@ -1,5 +1,6 @@
 ﻿using Common;
 using Common.Chat;
+using Common.Messages;
 using Common.Net;
 using Common.Net.ConcretePackets;
 using System.Net;
@@ -9,16 +10,23 @@ namespace ChatikSDavidom.Components.Client
 {
     public class Client
     {
-        public Client(IPAddress address, int port, string name, IChat chat)
+        public Client(IPAddress address, int port, string name)
         {
             m_Address = address;
             m_Port = port;
             Name = name;
-            m_Chat = chat;
-            m_Tcp = new TcpClient(address.ToString(), port);
-            m_Stream = m_Tcp.GetStream();
 
-            BeginRead();
+            try
+            {
+                m_Tcp = new TcpClient(address.ToString(), port);
+                m_Stream = m_Tcp.GetStream();
+
+                BeginRead();
+            }
+            catch(Exception e)
+            {
+                MyConsoleHelper.WriteLineException(e);
+            }
         }
 
         public bool Connected => m_Tcp.Connected;
@@ -33,7 +41,6 @@ namespace ChatikSDavidom.Components.Client
         private readonly byte[] m_SendBuffer = new byte[ProjectSettings.MaxBufferSize];
 
         private Action m_OnCompleteSendAction = null;
-        private readonly IChat m_Chat;
 
         public void Send(Packet packet, Action onSendCompleted = null)
         {
@@ -60,7 +67,7 @@ namespace ChatikSDavidom.Components.Client
             }
             catch (Exception e)
             {
-                m_Chat.SendException(e);
+                MyConsoleHelper.WriteLineException(e);
             }
         }
 
@@ -92,7 +99,7 @@ namespace ChatikSDavidom.Components.Client
             }
             catch (Exception e)
             {
-                m_Chat.SendException(e);
+                MyConsoleHelper.WriteLineException(e);
                 m_Tcp.Close();
             }
             finally
@@ -109,15 +116,15 @@ namespace ChatikSDavidom.Components.Client
             {
                 case PacketType.Welcome:
                     var welcome = new Welcome(bytes);
-                    m_Chat.SendMessage(welcome.ToString());
+                    MyConsole.WriteLine(welcome.ToString());
                     break;
                 case PacketType.ClientMessage:
                     var message = new UserMessage(bytes);
-                    m_Chat.SendMessage(message.ToString());
+                    MyConsole.WriteLine(message.ToString());
                     break;
                 case PacketType.ServerMessage:
                     var serverMessage = new ServerMessage(bytes);
-                    m_Chat.SendMessage(serverMessage.ToString(), ConsoleColor.DarkYellow);
+                    MyConsole.WriteLine(serverMessage.ToString(), ConsoleColor.DarkYellow);
                     break;
                 case PacketType.Command:
                     var command = new Command(bytes);
@@ -127,7 +134,7 @@ namespace ChatikSDavidom.Components.Client
                         case Commands.ClientDisconnect:
                         case Commands.ConnectDeny:
                         case Commands.ServerStop:
-                            m_Chat.SendMessage(new Common.Messages.Formatter(label: "DISCONNECT", message: command.CommandType.ToString()), ConsoleColor.Red);
+                            MyConsole.WriteLine(new Formatter(label: "DISCONNECT", message: command.CommandType.ToString()), ConsoleColor.Red);
 
                             if (m_Tcp.Connected)
                                 m_Tcp?.Close();

@@ -22,7 +22,7 @@ public class Formatter
     {
         m_Time = time;
         m_Label = label;
-        m_Message = FixNewLines(message);
+        m_Message = (message);
 
         if (string.IsNullOrEmpty(m_Time))
             m_Time = DateTime.Now.ToString(ProjectSettings.DateFormat);
@@ -33,13 +33,13 @@ public class Formatter
         ApplyFormat(m_LabelString, m_Label);
     }
 
-    private string FixNewLines(string message)
-    {
-        message = message.Replace("\n", "\n" + new string(' ', TimeCharsCount + LabelCharsCount));
-        message = message.Replace("\0", " ");
+    //private string FixNewLines(string message)
+    //{
+    //    message = message.Replace("\n", "\n" + new string(' ', TimeCharsCount + LabelCharsCount));
+    //    message = message.Replace("\0", " ");
 
-        return message;
-    }
+    //    return message;
+    //}
 
     private void ApplyFormat(char[] str, string input)
     {

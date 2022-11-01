@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ClientSide": {
+      "commandName": "Project",
+      "hotReloadEnabled": false
+    }
+  }
+}

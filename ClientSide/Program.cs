@@ -10,15 +10,12 @@ internal class Program
 
     private static void Main(string[] args)
     {
-        InitDI();
-        IChat chat = Container.GetService<ConsoleChat>();
-
-        InitClient(chat, out var client);
+        InitClient(out var client);
         InitProgramEndPoint(client);
 
         while (client.Connected)
         {
-            var message = (string)chat.ReadMessage();
+            var message = (string)MyConsole.ReadLine();
             if (string.IsNullOrWhiteSpace(message)) continue;
             client.Send(new UserMessage(client.Name, message));
         }
@@ -26,35 +23,34 @@ internal class Program
         Console.ReadKey();
     }
 
-    private static void InitDI()
-    {
-        Container = new(new ConsoleChat());
-    }
-    private static void InitClient(IChat chat, out Client client)
+    private static void InitClient(out Client client)
     {
         string ip;
         int port;
         string name;
 
-        do
-        {
-            chat.SendMessage("Enter IP: ", ConsoleColor.DarkGreen);
-            ip = (string)chat.ReadMessage();
-        }
-        while (string.IsNullOrEmpty(ip));
-
-        do
-            chat.SendMessage("Enter Port: ", ConsoleColor.DarkGreen);
-        while (!int.TryParse((string)chat.ReadMessage(), out port));
+        IPAddress address;
 
         do
         {
-            chat.SendMessage("Enter Your Name: ", ConsoleColor.DarkGreen);
-            name = (string)chat.ReadMessage();
-        }
-        while (string.IsNullOrEmpty(name));
+            MyConsole.WriteLine("Enter IP: ", ConsoleColor.DarkGreen);
+            ip = (string)MyConsole.ReadLine();
 
-        client = new(IPAddress.Parse(ip), port, name, chat);
+        }
+        while (!IPAddress.TryParse(ip, out address));
+
+        do
+            MyConsole.WriteLine("Enter Port: ", ConsoleColor.DarkGreen);
+        while (!int.TryParse((string)MyConsole.ReadLine(), out port));
+
+        do
+        {
+            MyConsole.WriteLine("Enter Your Name: ", ConsoleColor.DarkGreen);
+            name = (string)MyConsole.ReadLine();
+        }
+        while (string.IsNullOrWhiteSpace(name));
+
+        client = new(address, port, name);
 
         client.Send(new Welcome(client.Name));
 

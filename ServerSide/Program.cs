@@ -8,41 +8,34 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        InitDI();
         InitServer(out var server);
         InitProgramEndPoint(server);
 
         await Task.Delay(-1);
     }
 
-    private static void InitDI()
-    {
-        Container = new(new ConsoleChat());
-    }
     private static void InitServer(out Server server)
     {
-        IChat chat = Container.GetService<ConsoleChat>();
-
         int port;
         int maxConnections;
 
         do
-            chat.SendMessage("Enter listening port", ConsoleColor.DarkGreen);
-        while (!int.TryParse((string)chat.ReadMessage(), out port));
+            MyConsole.WriteLine("Enter listening port", ConsoleColor.DarkGreen);
+        while (!int.TryParse((string)MyConsole.ReadLine(), out port));
 
         do
-            chat.SendMessage("Enter max connections", ConsoleColor.DarkGreen);
-        while (!int.TryParse((string)chat.ReadMessage(), out maxConnections));
+            MyConsole.WriteLine("Enter max connections", ConsoleColor.DarkGreen);
+        while (!int.TryParse((string)MyConsole.ReadLine(), out maxConnections));
 
-        server = new(port, maxConnections, chat);
+        server = new(port, maxConnections);
 
-        server.Warn += (warn) => chat.SendMessage(warn, ConsoleColor.Yellow);
-        server.Error += chat.SendException;
-        server.ClientConnect += (formatter) => chat.SendMessage(formatter, ConsoleColor.Green);
-        server.ClientDisconnect += (formatter) => chat.SendMessage(formatter, ConsoleColor.DarkYellow);
-        server.ClientMessage += (formatter) => chat.SendMessage(formatter);
-        server.ServerStop += (formatter) => chat.SendMessage(formatter, ConsoleColor.Red);
-        server.ServerStart += (formatter) => chat.SendMessage(formatter, ConsoleColor.Cyan);
+        server.Warn += (warn) => MyConsole.WriteLine(warn, ConsoleColor.Yellow);
+        server.Error += MyConsoleHelper.WriteLineException;
+        server.ClientConnect += (formatter) => MyConsole.WriteLine(formatter, ConsoleColor.Green);
+        server.ClientDisconnect += (formatter) => MyConsole.WriteLine(formatter, ConsoleColor.DarkYellow);
+        server.ClientMessage += (formatter) => MyConsole.WriteLine(formatter);
+        server.ServerStop += (formatter) => MyConsole.WriteLine(formatter, ConsoleColor.Red);
+        server.ServerStart += (formatter) => MyConsole.WriteLine(formatter, ConsoleColor.Cyan);
 
         server.Start();
     }
